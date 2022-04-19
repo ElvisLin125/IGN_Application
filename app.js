@@ -3,10 +3,8 @@ script.src = 'https://ign-apis.herokuapp.com/videos?callback=processVideos'
 document.getElementsByTagName('head')[0].appendChild(script);
 
 var index = 0;
-var data;
 
 function processVideos(res) {
-   // data = (res.data.splice(0,10))
    var currVideo = res.data[index];
    console.log(currVideo)
    console.log(res.data)
@@ -24,13 +22,17 @@ function processVideos(res) {
    player.appendChild(sourceTag);
    player.onended = () => {
       index++;
-      updatePlayer(data[index].assets[0].url);
+      if (index < res.data.length) {
+         updatePlayer(res.data[index].assets[0].url, res.data[index].metadata);
+      }
+      
    }
    mainVideo.appendChild(player);
    /*
    Title for Video Playing
    */
    var mainTitle = document.createElement("h2");
+   mainTitle.setAttribute("id", "mainTitle")
    mainTitle.innerHTML = currVideo.metadata.title;
    mainVideo.appendChild(mainTitle);
 
@@ -38,17 +40,18 @@ function processVideos(res) {
    Description for Video Playing
    */
    var description = document.createElement("p");
+   description.setAttribute("id", "mainDescription")
    description.innerHTML = currVideo.metadata.description;
    mainVideo.appendChild(description);
 
    /*
    Playlist Queue
    */
-   var nextVideos = res.data.splice(1, 4);
+   var nextVideos = [...res.data].splice(1, 4);
    var queue = document.getElementById("playlistQueue");
    nextVideos.forEach(element => {
       var nextVid = document.createElement('div');
-      nextVid.setAttribute('id', 'nextVid');
+      nextVid.setAttribute('class', 'nextVid');
 
       var thumbnail = document.createElement('img');
       thumbnail.setAttribute('src', element.thumbnails[0].url);
@@ -60,7 +63,7 @@ function processVideos(res) {
 
       queue.appendChild(nextVid);
       queue.appendChild(document.createElement("hr"));
-      console.log(element);
+      // console.log(element);
    })
 
    /*
@@ -74,12 +77,12 @@ function processVideos(res) {
    /*
    Load More Videos in Queue
    */
-   var nextVideos = res.data.splice(1, 4);
+   var nextVideos = [...res.data].splice(5);
    var loadMore = document.createElement('div');
    loadMore.setAttribute('id', 'loadMore');
    nextVideos.forEach(element => {
       var nextVid = document.createElement('div');
-      nextVid.setAttribute('id', 'nextVid');
+      nextVid.setAttribute('class', 'nextVid');
 
       var thumbnail = document.createElement('img');
       thumbnail.setAttribute('src', element.thumbnails[0].url);
@@ -101,10 +104,11 @@ function processVideos(res) {
 
 }
 
-function updatePlayer(url) {
-   console.log(url)
+function updatePlayer(url, metadata) {
    let player = document.getElementById('player');
    player.setAttribute('src', url);
+   document.getElementById('mainTitle').innerHTML = metadata.title
+   document.getElementById('mainDescription').innerHTML = metadata.description
    player.load();
    player.play();
 } 
